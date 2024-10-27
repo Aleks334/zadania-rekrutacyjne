@@ -25,6 +25,22 @@ function resetCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
 	setCanvasDimensions({ canvas });
 }
 
+function convertToGrayscale(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	const pixels = imageData.data;
+
+	for (let i = 0; i < pixels.length; i += 4) {
+		//https://en.wikipedia.org/wiki/Grayscale#Colourimetric_(perceptual_luminance-preserving)_conversion_to_greyscale
+		const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
+
+		pixels[i] = luminance;
+		pixels[i + 1] = luminance;
+		pixels[i + 2] = luminance;
+	}
+
+	ctx.putImageData(imageData, 0, 0);
+}
+
 imageUploader?.addEventListener("change", function () {
 	const file = this.files?.[0];
 
@@ -49,18 +65,5 @@ convertBtn?.addEventListener("click", () => {
 	setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
 
 	ctx.drawImage(previewImg, 0, 0);
-
-	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-	const pixels = imageData.data;
-
-	for (let i = 0; i < pixels.length; i += 4) {
-		//https://en.wikipedia.org/wiki/Grayscale#Colourimetric_(perceptual_luminance-preserving)_conversion_to_greyscale
-		const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
-
-		pixels[i] = luminance;
-		pixels[i + 1] = luminance;
-		pixels[i + 2] = luminance;
-	}
-
-	ctx.putImageData(imageData, 0, 0);
+	convertToGrayscale(canvas, ctx);
 });
