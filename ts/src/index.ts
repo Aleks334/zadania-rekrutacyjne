@@ -20,13 +20,13 @@ function setCanvasDimensions({ canvas, height: h, width: w }: CanvasDimensionsOp
 	canvas.height = h ?? DEFAULT_CANVAS_HEIGHT;
 }
 
-function resetCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+function resetCanvas(ctx: CanvasRenderingContext2D) {
 	ctx.reset();
-	setCanvasDimensions({ canvas });
+	setCanvasDimensions({ canvas: ctx.canvas });
 }
 
-function convertToGrayscale(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
-	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+function convertToGrayscale(ctx: CanvasRenderingContext2D) {
+	const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 	const pixels = imageData.data;
 
 	for (let i = 0; i < pixels.length; i += 4) {
@@ -50,7 +50,7 @@ imageUploader?.addEventListener("change", function () {
 	const url = URL.createObjectURL(file);
 
 	if (canvas && ctx) {
-		resetCanvas(canvas, ctx);
+		resetCanvas(ctx);
 	}
 
 	if (previewImg) {
@@ -65,5 +65,5 @@ convertBtn?.addEventListener("click", () => {
 	setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
 
 	ctx.drawImage(previewImg, 0, 0);
-	convertToGrayscale(canvas, ctx);
+	convertToGrayscale(ctx);
 });
