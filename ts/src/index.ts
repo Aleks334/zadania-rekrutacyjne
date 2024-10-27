@@ -10,7 +10,16 @@ const previewImg = document.getElementById("uploadedImage") as HTMLImageElement 
 const canvas = document.getElementById("grayscaleImage") as HTMLCanvasElement | null;
 const ctx = canvas?.getContext("2d");
 
-canvas && setCanvasDimensions({ canvas });
+if (!imageUploader || !convertBtn || !previewImg || !canvas) {
+	console.error({ imageUploader, convertBtn, previewImg, canvas });
+	throw new Error(`Failed to find at least 1 of the above nodes`);
+}
+
+if (!ctx) {
+	throw new Error(`Canvas context is not available.`);
+}
+
+setCanvasDimensions({ canvas });
 
 function setCanvasDimensions({ canvas, height: h, width: w }: CanvasDimensionsOptions) {
 	const DEFAULT_CANVAS_WIDTH = 350;
@@ -41,29 +50,24 @@ function convertToGrayscale(ctx: CanvasRenderingContext2D) {
 	ctx.putImageData(imageData, 0, 0);
 }
 
-imageUploader?.addEventListener("change", function () {
+imageUploader.addEventListener("change", function () {
 	const file = this.files?.[0];
 
-	const regex = new RegExp("image/*");
+	const regex = new RegExp(this.accept);
 	if (!file || !regex.test(file.type)) {
 		alert("The file format is invalid");
 		return;
 	}
 
 	const url = URL.createObjectURL(file);
+	previewImg.src = url;
+	previewImg.onload = () => URL.revokeObjectURL(url);
 
-	ctx && resetCanvas(ctx);
-
-	if (previewImg) {
-		previewImg.src = url;
-		previewImg.onload = () => URL.revokeObjectURL(url);
-	}
+	resetCanvas(ctx);
 });
 
-convertBtn?.addEventListener("click", () => {
-	if (!ctx || !canvas) return;
-
-	if (previewImg?.src) {
+convertBtn.addEventListener("click", () => {
+	if (previewImg.src) {
 		setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
 
 		ctx.drawImage(previewImg, 0, 0);
