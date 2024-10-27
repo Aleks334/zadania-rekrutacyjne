@@ -45,13 +45,14 @@ imageUploader?.addEventListener("change", function () {
 	const file = this.files?.[0];
 
 	const regex = new RegExp("image/*");
-	if (!file || !regex.test(file.type)) return;
+	if (!file || !regex.test(file.type)) {
+		alert("The file format is invalid");
+		return;
+	}
 
 	const url = URL.createObjectURL(file);
 
-	if (canvas && ctx) {
-		resetCanvas(ctx);
-	}
+	ctx && resetCanvas(ctx);
 
 	if (previewImg) {
 		previewImg.src = url;
@@ -60,10 +61,14 @@ imageUploader?.addEventListener("change", function () {
 });
 
 convertBtn?.addEventListener("click", () => {
-	if (!ctx || !canvas || !previewImg?.src) return;
+	if (!ctx || !canvas) return;
 
-	setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
+	if (previewImg?.src) {
+		setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
 
-	ctx.drawImage(previewImg, 0, 0);
-	convertToGrayscale(ctx);
+		ctx.drawImage(previewImg, 0, 0);
+		convertToGrayscale(ctx);
+	} else {
+		alert("You have to upload image before converting to grayscale.");
+	}
 });
