@@ -19,9 +19,9 @@ if (!ctx) {
 	throw new Error(`Canvas context is not available.`);
 }
 
-setCanvasDimensions({ canvas });
+setCanvasSize({ canvas });
 
-function setCanvasDimensions({ canvas, height: h, width: w }: CanvasDimensionsOptions) {
+function setCanvasSize({ canvas, height: h, width: w }: CanvasDimensionsOptions) {
 	const DEFAULT_CANVAS_WIDTH = 350;
 	const DEFAULT_CANVAS_HEIGHT = 200;
 
@@ -31,7 +31,7 @@ function setCanvasDimensions({ canvas, height: h, width: w }: CanvasDimensionsOp
 
 function resetCanvas(ctx: CanvasRenderingContext2D) {
 	ctx.reset();
-	setCanvasDimensions({ canvas: ctx.canvas });
+	setCanvasSize({ canvas: ctx.canvas });
 }
 
 function convertToGrayscale(ctx: CanvasRenderingContext2D) {
@@ -39,22 +39,18 @@ function convertToGrayscale(ctx: CanvasRenderingContext2D) {
 	const pixels = imageData.data;
 
 	for (let i = 0; i < pixels.length; i += 4) {
-		//https://en.wikipedia.org/wiki/Grayscale#Colourimetric_(perceptual_luminance-preserving)_conversion_to_greyscale
 		const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
 
-		pixels[i] = luminance;
-		pixels[i + 1] = luminance;
-		pixels[i + 2] = luminance;
+		pixels[i] = pixels[i + 1] = pixels[i + 2] = luminance;
 	}
 
 	ctx.putImageData(imageData, 0, 0);
 }
 
-imageUploader.addEventListener("change", function () {
-	const file = this.files?.[0];
+imageUploader.addEventListener("change", (e) => {
+	const file = (e.target as HTMLInputElement).files?.item(0);
 
-	const regex = new RegExp(this.accept);
-	if (!file || !regex.test(file.type)) {
+	if (!file || !file.type.startsWith("image/")) {
 		alert("The file format is invalid");
 		return;
 	}
@@ -68,7 +64,11 @@ imageUploader.addEventListener("change", function () {
 
 convertBtn.addEventListener("click", () => {
 	if (previewImg.src) {
-		setCanvasDimensions({ canvas, width: previewImg.naturalWidth, height: previewImg.naturalHeight });
+		setCanvasSize({
+			canvas,
+			width: previewImg.naturalWidth,
+			height: previewImg.naturalHeight,
+		});
 
 		ctx.drawImage(previewImg, 0, 0);
 		convertToGrayscale(ctx);
